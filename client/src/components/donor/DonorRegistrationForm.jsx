@@ -9,11 +9,29 @@ const DonorRegistrationForm = () => {
     healthStatus: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Donor Registration Data:', formData);
-    // In the future: API Call to Backend
-    alert('Donor successfully registered!');
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/donors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert('Donor successfully registered and synchronized with the matching system!');
+        setFormData({ name: '', age: '', bloodGroup: '', organ: '', healthStatus: '' });
+      } else {
+        const data = await response.json();
+        alert(`Error: ${data.message || 'Failed to register donor'}`);
+      }
+    } catch (error) {
+      console.error('Error registering donor:', error);
+      alert('Network error. Is the backend server running?');
+    }
   };
 
   const handleChange = (e) => {

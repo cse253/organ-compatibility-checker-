@@ -9,11 +9,29 @@ const RecipientRegistrationForm = () => {
     severity: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Recipient Registration Data:', formData);
-    // In the future: API Call to Backend
-    alert('Recipient successfully registered!');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/recipients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert('Recipient successfully registered and synchronized with the matching system!');
+        setFormData({ name: '', age: '', bloodGroup: '', requiredOrgan: '', severity: '' });
+      } else {
+        const data = await response.json();
+        alert(`Error: ${data.message || 'Failed to register recipient'}`);
+      }
+    } catch (error) {
+      console.error('Error registering recipient:', error);
+      alert('Network error. Is the backend server running?');
+    }
   };
 
   const handleChange = (e) => {

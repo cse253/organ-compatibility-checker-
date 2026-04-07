@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ResultCard from './ResultCard';
 
 const CompatibilityDashboard = () => {
@@ -6,17 +6,39 @@ const CompatibilityDashboard = () => {
   const [selectedRecipient, setSelectedRecipient] = useState('');
   const [result, setResult] = useState(null);
   const [isComputing, setIsComputing] = useState(false);
+  const [donors, setDonors] = useState([]);
+  const [recipients, setRecipients] = useState([]);
 
-  // Mock data for UI demonstration purposes
-  const donors = [
-    { id: 'd1', name: 'John Doe', bloodGroup: 'O+', organ: 'Kidney' },
-    { id: 'd2', name: 'Alice Smith', bloodGroup: 'A-', organ: 'Liver' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [donorsRes, recipientsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/donors'),
+          fetch('http://localhost:5000/api/recipients')
+        ]);
 
-  const recipients = [
-    { id: 'r1', name: 'Jane Smith', bloodGroup: 'A+', requiredOrgan: 'Kidney', severity: 'High' },
-    { id: 'r2', name: 'Bob Johnson', bloodGroup: 'O+', requiredOrgan: 'Liver', severity: 'Medium' },
-  ];
+        if (donorsRes.ok && recipientsRes.ok) {
+          const donorsData = await donorsRes.json();
+          const recipientsData = await recipientsRes.json();
+          setDonors(donorsData);
+          setRecipients(recipientsData);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Fallback to defaults or empty if server is down
+        setDonors([
+          { id: 'd1', _id: 'd1', name: 'John Doe', bloodGroup: 'O+', organ: 'Kidney' },
+          { id: 'd2', _id: 'd2', name: 'Alice Smith', bloodGroup: 'A-', organ: 'Liver' },
+        ]);
+        setRecipients([
+          { id: 'r1', _id: 'r1', name: 'Jane Smith', bloodGroup: 'A+', requiredOrgan: 'Kidney', severity: 'High' },
+          { id: 'r2', _id: 'r2', name: 'Bob Johnson', bloodGroup: 'O+', requiredOrgan: 'Liver', severity: 'Medium' },
+        ]);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleCompute = () => {
     if (!selectedDonor || !selectedRecipient) {
